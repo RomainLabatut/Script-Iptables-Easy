@@ -1,0 +1,66 @@
+
+                                                                                                                                                                        #! /bin/sh                                                                                                                                                                         
+
+#Pour demarrer le firewall
+do_start() {
+
+   # Efface toutes les règles en cours. -F toutes. -X utilisateurs
+	iptables -F
+	iptables -X
+	iptables -t nat -F
+	iptables -t nat -X
+	iptables -t mangle -F
+	iptables -t mangle -X
+
+   # Mettre en place les politiques
+	iptables -P INPUT ACCEPT
+	iptables -P OUTPUT ACCEPT
+	iptables -P FORWARD ACCEPT
+
+   # Accept incomming TCP connections from eth0 on port 22, 21, 25
+	iptables -A INPUT  -p tcp --dport ssh -j ACCEPT
+	iptables -A INPUT  -p tcp --dport smtp -j ACCEPT
+	iptables -A INPUT  -p tcp --dport ftp -j ACCEPT
+	iptables -A INPUT  -p tcp --dport 3306 -j ACCEPT
+	iptables -A INPUT  -p tcp --dport 80 -j ACCEPT
+	iptables -A INPUT  -p tcp --dport 443 -j ACCEPT
+
+  echo "firewall started [OK]"
+
+}
+
+#Fonction qui arrete le firewall
+do_stop() {
+
+   # Efface toutes les règles
+	iptables -F
+	iptables -X
+	iptables -t nat -F
+	iptables -t nat -X
+	iptables -t mangle -F
+	iptables -t mangle -X
+
+   # Mettre en place les poitiques
+	iptables  -P INPUT DROP
+	iptables  -P OUTPUT DROP
+	iptables  -P FORWARD DROP
+
+  echo "Firewall stopped [OK]"
+}
+
+case "$1" in
+    start)
+        do_start
+        exit 0
+    ;;
+    stop)
+        do_stop
+        exit 0
+    ;;
+    restart)
+        do_stop
+        do_start
+        exit 0
+    ;;
+
+esac
